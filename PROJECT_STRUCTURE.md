@@ -5,7 +5,7 @@ This document defines the recommended repository structure for BaliNavi MVP.
 ## Final Structure
 
 ```text
-balinavi/
+balinavi-smart-travel/
 ├── docs/
 │   ├── PROJECT_PLAN_SUMMARY.md
 │   ├── MVP_SCOPE.md
@@ -69,7 +69,7 @@ balinavi/
 │   └── .gitkeep
 │
 ├── notebooks/
-│   └── 01_eda_balinavi.ipynb
+│   └── .gitkeep
 │
 ├── tests/
 │   ├── __init__.py
@@ -83,11 +83,11 @@ balinavi/
 │   └── frontend.Dockerfile
 │
 ├── .github/
-│   ├── pull_request_template.md
 │   └── workflows/
 │       └── ci-docker.yml
 │
 ├── .env.example
+├── .dockerignore
 ├── .gitignore
 ├── docker-compose.yml
 ├── requirements.txt
