@@ -14,7 +14,7 @@ def classify_budget(
     if num_people <= 0:
         raise ValueError("num_people must be greater than 0")
 
-    budget_per_person_per_day = int(total_budget / duration_days / num_people)
+    budget_per_person_per_day = total_budget // (duration_days * num_people)
 
     if budget_per_person_per_day < LOW_BUDGET_LIMIT:
         tier = "low"
