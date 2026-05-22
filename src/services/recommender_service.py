@@ -16,6 +16,7 @@ DUMMY_DESTINATIONS = [
         "maps_url": None,
         "image_url": None,
         "score": 0.92,
+        "budget_tiers": ["low", "medium", "high"],
         "match_reasons": [
             "Matches preferred category",
             "Suitable for selected budget tier",
@@ -38,6 +39,7 @@ DUMMY_DESTINATIONS = [
         "maps_url": None,
         "image_url": None,
         "score": 0.88,
+        "budget_tiers": ["medium", "high"],
         "match_reasons": [
             "Matches preferred category",
             "Matches preferred location",
@@ -60,6 +62,7 @@ DUMMY_DESTINATIONS = [
         "maps_url": None,
         "image_url": None,
         "score": 0.81,
+        "budget_tiers": ["low", "medium", "high"],
         "match_reasons": [
             "Matches preferred category",
             "Suitable for selected budget tier",
@@ -82,12 +85,31 @@ DUMMY_DESTINATIONS = [
         "maps_url": None,
         "image_url": None,
         "score": 0.79,
+        "budget_tiers": ["medium", "high"],
         "match_reasons": [
             "Matches preferred location",
             "Suitable for selected budget tier",
         ],
     },
 ]
+
+
+def _build_match_reasons(destination: dict, budget_tier: str) -> list[str]:
+    reasons = list(destination["match_reasons"])
+    budget_reason = f"Suitable for {budget_tier} budget tier"
+    if budget_reason not in reasons:
+        reasons.append(budget_reason)
+    return reasons
+
+
+def _format_destination(destination: dict, budget_tier: str) -> dict:
+    formatted = {
+        key: value
+        for key, value in destination.items()
+        if key != "budget_tiers"
+    }
+    formatted["match_reasons"] = _build_match_reasons(destination, budget_tier)
+    return formatted
 
 
 def recommend_destinations(
@@ -103,6 +125,8 @@ def recommend_destinations(
 
     filtered = []
     for destination in DUMMY_DESTINATIONS:
+        if budget_tier not in destination["budget_tiers"]:
+            continue
         if categories and destination["category"] not in categories:
             continue
         if sub_categories and destination["sub_category"] not in sub_categories:
@@ -111,10 +135,8 @@ def recommend_destinations(
             continue
         filtered.append(destination)
 
-    recommendations = filtered or DUMMY_DESTINATIONS
-
     return sorted(
-        recommendations,
+        [_format_destination(destination, budget_tier) for destination in filtered],
         key=lambda destination: destination["score"],
         reverse=True,
     )[:top_k]
