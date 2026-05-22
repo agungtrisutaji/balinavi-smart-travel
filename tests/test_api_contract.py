@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app.backend.core.config import APP_VERSION
 from app.backend.main import app
 
 
@@ -13,7 +14,7 @@ def test_health_returns_status_ok() -> None:
     assert response.json() == {
         "status": "ok",
         "service": "balinavi-backend",
-        "version": "0.1.0",
+        "version": APP_VERSION,
     }
 
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.backend.core.config import APP_VERSION
 from app.backend.schemas.trip_schema import (
     MetadataResponse,
     PlanTripRequest,
@@ -24,7 +25,7 @@ def health_check() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "balinavi-backend",
-        "version": "0.1.0",
+        "version": APP_VERSION,
     }
 
 
