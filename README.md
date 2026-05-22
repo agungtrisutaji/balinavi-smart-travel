@@ -32,7 +32,7 @@ Out-of-scope features are documented in `docs/MVP_SCOPE.md`.
 
 | Area | Technology |
 |---|---|
-| Language | Python 3.11 |
+| Language | Python 3.12 |
 | Data processing | Pandas, NumPy |
 | Recommender | Scikit-learn |
 | Artifact | Joblib |
