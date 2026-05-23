@@ -7,8 +7,8 @@ Dokumen ini mendefinisikan skema dataset di setiap tahap data pipeline BaliNavi 
 ```text
 data/raw/bali_destinations.csv          ← dataset mentah dari sumber
         │
-        ▼  src/preprocessing/preprocess.py
-data/processed/bali_destinations.csv    ← dataset yang sudah dibersihkan
+        ▼  src/preprocessing/preprocess.py (target implementasi)
+data/processed/bali_destinations.csv    ← target dataset yang sudah dibersihkan
         │
         ▼  src/features/build_features.py
 data/final/bali_destinations.csv        ← dataset model-ready
@@ -60,7 +60,7 @@ Dataset mentah berasal dari sumber data destinasi Bali. Kolom menggunakan bahasa
 
 File: `data/processed/bali_destinations.csv`
 
-Dataset yang sudah dibersihkan dan dinormalisasi oleh `src/preprocessing/preprocess.py`.
+Skema ini adalah target kontrak untuk dataset yang sudah dibersihkan dan dinormalisasi oleh implementasi preprocessing di masa depan. Implementasi `src/preprocessing/preprocess.py` saat ini masih skeleton/planned dan belum melakukan seluruh proses cleaning yang dijelaskan di dokumen ini.
 
 ### Kolom Processed Dataset
 
@@ -70,13 +70,13 @@ Dataset yang sudah dibersihkan dan dinormalisasi oleh `src/preprocessing/preproc
 | `name` | string | tidak | Nama destinasi, sudah di-trim |
 | `category_raw` | string | tidak | Kategori asli dari raw dataset, sudah di-trim |
 | `category_main` | string | tidak | Kategori utama hasil mapping (lihat Mapping Kategori) |
-| `detail_category` | string | ya | Detail kategori hasil parsing dari `kategori` |
+| `detail_category` | string | ya | Detail kategori hasil parsing dari `kategori`, `null` jika tidak ada |
 | `sub_category` | string | tidak | Sub-kategori hasil mapping (lihat Mapping Sub-Kategori) |
-| `description` | string | ya | Deskripsi destinasi, string kosong jika tidak ada |
-| `tags` | string | ya | Tags, string kosong jika tidak ada |
-| `activity` | string | ya | Aktivitas, string kosong jika tidak ada |
+| `description` | string | ya | Deskripsi destinasi, `null` jika tidak ada |
+| `tags` | string | ya | Tags, `null` jika tidak ada |
+| `activity` | string | ya | Aktivitas, `null` jika tidak ada |
 | `regency_city` | string | tidak | Kabupaten atau kota |
-| `district` | string | ya | Kecamatan, string kosong jika tidak ada |
+| `district` | string | ya | Kecamatan, `null` jika tidak ada |
 | `estimated_ticket_price` | integer | tidak | Harga tiket per orang dalam IDR (lihat Mapping Harga) |
 | `is_free` | boolean | tidak | `True` jika harga 0 atau `"Gratis"` |
 | `price_level` | string | tidak | Level harga: `"free"`, `"low"`, `"medium"`, `"high"` |
@@ -86,13 +86,15 @@ Dataset yang sudah dibersihkan dan dinormalisasi oleh `src/preprocessing/preproc
 | `longitude` | float | ya | Koordinat bujur |
 | `maps_url` | string | ya | URL Google Maps |
 | `image_url` | string | ya | URL gambar destinasi |
-| `has_coordinates` | boolean | tidak | `True` jika latitude dan longitude ada |
-| `has_description` | boolean | tidak | `True` jika deskripsi tidak kosong |
+| `has_coordinates` | boolean | tidak | `True` jika latitude dan longitude valid dalam batas koordinat Bali |
+| `has_description` | boolean | tidak | `True` jika deskripsi tersedia dan tidak blank |
 | `data_quality_score` | float | tidak | Skor kualitas data 0.0 - 1.0 (lihat Data Quality Rules) |
+
+Untuk representasi CSV, cell kosong pada kolom nullable dapat terbaca sebagai NaN saat loading. Setelah normalisasi, kolom teks opsional seperti `description`, `tags`, `activity`, dan `district` direpresentasikan sebagai `null` jika nilainya tidak tersedia.
 
 ### Mapping Kategori (`kategori` → `category_main`)
 
-Kolom `kategori` dari raw dataset dipisah berdasarkan tanda hubung (`-`) menjadi dua bagian. Bagian pertama di-mapping ke `category_main`:
+Kolom `kategori` dari raw dataset dipisah berdasarkan karakter tanda hubung (`-`) menjadi dua bagian, lalu whitespace di sekitar setiap hasil split di-trim. Bagian pertama di-mapping ke `category_main`:
 
 | Bagian Pertama (raw) | `category_main` |
 |---|---|
@@ -101,7 +103,7 @@ Kolom `kategori` dari raw dataset dipisah berdasarkan tanda hubung (`-`) menjadi
 | `Rekreasi` | `recreation` |
 | (lainnya atau kosong) | `general` |
 
-Mapping bersifat case-insensitive dan di-trim.
+Mapping bersifat case-insensitive dan di-trim. Variasi seperti `Alam-Pantai`, `Alam - Pantai`, dan `Alam -Pantai` harus diperlakukan ekuivalen.
 
 ### Mapping Detail Kategori (`kategori` → `detail_category`)
 
@@ -112,7 +114,7 @@ Bagian kedua dari kolom `kategori` (setelah tanda hubung) disimpan sebagai `deta
 | `Alam - Pantai` | `nature` | `Pantai` |
 | `Budaya - Pura` | `culture` | `Pura` |
 | `Rekreasi - Waterpark` | `recreation` | `Waterpark` |
-| `Alam` | `nature` | (kosong) |
+| `Alam` | `nature` | `null` |
 
 ### Mapping Sub-Kategori (`detail_category` → `sub_category`)
 
@@ -151,6 +153,8 @@ SUPPORTED_SUB_CATEGORIES = [
 ```
 
 ### Mapping Harga (`harga_destinasi` → `estimated_ticket_price`, `is_free`, `price_level`)
+
+`estimated_ticket_price` adalah estimasi harga tiket per orang dalam IDR.
 
 #### Langkah 1: Konversi ke `estimated_ticket_price`
 
@@ -194,8 +198,9 @@ Dataset model-ready yang dihasilkan oleh `src/features/build_features.py`. Beris
 | `content_text` | string | tidak | Gabungan teks untuk TF-IDF (lihat Konstruksi content_text) |
 | `popularity_score` | float | tidak | Skor popularitas 0.0 - 1.0 |
 | `budget_tiers` | string | tidak | Budget tier yang cocok, dipisahkan koma: `"low,medium,high"` |
-| `estimated_ticket_total` | integer | tidak | Sama dengan `estimated_ticket_price` (untuk satu orang) |
 | `recommendation_eligible` | boolean | tidak | Apakah destinasi layak direkomendasikan (lihat Aturan Eligibility) |
+
+`estimated_ticket_total` bukan field persisted pada final dataset secara default. Field ini adalah field runtime API untuk konteks request tertentu dan dihitung dari `estimated_ticket_price * num_people`. Field tersebut hanya boleh dihasilkan ke dataset/file turunan jika ada kebutuhan eksplisit untuk konteks request tertentu.
 
 ### Konstruksi `content_text`
 
@@ -260,8 +265,13 @@ Destinasi dianggap layak untuk direkomendasikan (`recommendation_eligible = True
 3. `sub_category` ada dalam `SUPPORTED_SUB_CATEGORIES`.
 4. `regency_city` tidak kosong.
 5. `data_quality_score >= 0.4`.
+6. `latitude` dan `longitude` adalah float non-null dalam batas koordinat Bali:
+   - `latitude`: -9.5 sampai -8.0
+   - `longitude`: 114.4 sampai 115.8
 
-Jika salah satu kondisi tidak terpenuhi, `recommendation_eligible = False`. Destinasi dengan `recommendation_eligible = False` tidak akan dimasukkan ke model training dan tidak akan direkomendasikan.
+Jika koordinat kosong, NaN, tidak bisa diparse, atau berada di luar batas Bali, set `recommendation_eligible = False`. Jika salah satu kondisi eligibility tidak terpenuhi, `recommendation_eligible = False`. Destinasi dengan `recommendation_eligible = False` tidak akan dimasukkan ke model training dan tidak akan direkomendasikan.
+
+Hanya record dengan `recommendation_eligible = True` yang dipetakan langsung ke field API `DestinationRecommendation` yang membutuhkan `latitude` dan `longitude` non-null.
 
 ---
 
@@ -277,17 +287,19 @@ Kolom pada final dataset dipetakan ke field pada `DestinationRecommendation` sch
 | `sub_category` | `sub_category` | Langsung |
 | `district` | `district` | Langsung |
 | `regency_city` | `regency_city` | Langsung |
-| `estimated_ticket_price` | `estimated_ticket_price` | Langsung |
-| `estimated_ticket_total` | `estimated_ticket_total` | Dihitung saat runtime berdasarkan `num_people` |
+| `estimated_ticket_price` | `estimated_ticket_price` | Langsung; harga tiket per orang |
+| (dihitung saat runtime) | `estimated_ticket_total` | `estimated_ticket_price * num_people` untuk request saat ini |
 | `rating` | `rating` | Langsung |
 | `review_count` | `review_count` | Langsung |
 | `popularity_score` | `popularity_score` | Langsung |
-| `latitude` | `latitude` | Langsung |
-| `longitude` | `longitude` | Langsung |
+| `latitude` | `latitude` | Langsung hanya untuk record eligible dengan koordinat valid non-null |
+| `longitude` | `longitude` | Langsung hanya untuk record eligible dengan koordinat valid non-null |
 | `maps_url` | `maps_url` | Langsung, nullable |
 | `image_url` | `image_url` | Langsung, nullable |
 | (dihitung saat runtime) | `score` | Cosine similarity score |
 | (dihitung saat runtime) | `match_reasons` | Alasan kecocokan |
+
+API response harus mengembalikan `estimated_ticket_total` sebagai total biaya tiket untuk group pada request saat ini, bukan harga per orang. Frontend harus menampilkan dan memperlakukan field ini sebagai total untuk group terpilih.
 
 ---
 
