@@ -130,16 +130,3 @@ artifacts/
 ```
 
 PostgreSQL or other databases can be added in a future production stage.
-
----
-
-## 2026-05-20 - AGENTS.md Handling
-
-Decision:
-Do not upload `AGENTS.md` to the public GitHub repository for now.
-
-Reason:
-The team prefers to share it manually.
-
-Impact:
-When using Codex, the private AGENTS.md content must be provided manually in the prompt or shared directly with the team.

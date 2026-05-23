@@ -18,8 +18,6 @@ Before working, read:
 - `docs/ARCHITECTURE.md`
 - `docs/DECISION_LOG.md`
 
-If using Codex, also provide the private `AGENTS.md` instructions manually if they are not stored in the repository.
-
 ## Goal
 
 [Describe one specific goal only.]
