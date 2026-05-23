@@ -4,7 +4,7 @@ Dokumen ini mendefinisikan aturan validasi dan kualitas data yang diterapkan pad
 
 ## Ikhtisar
 
-Aturan kualitas data memastikan bahwa dataset destinasi Bali memenuhi standar minimum sebelum digunakan oleh model rekomendasi dan disajikan melalui API. Aturan ini diterapkan di dua tahap:
+Aturan kualitas data memastikan bahwa dataset destinasi Bali memenuhi standar minimum sebelum digunakan oleh model rekomendasi dan disajikan melalui API. Aturan ini adalah target validasi untuk implementasi pipeline dan diterapkan di dua tahap saat pipeline selesai:
 
 1. **Preprocessing** (`src/preprocessing/preprocess.py`): validasi dan pembersihan per baris.
 2. **Feature Engineering** (`src/features/build_features.py`): penentuan eligibility rekomendasi.
@@ -26,11 +26,14 @@ Aturan kualitas data memastikan bahwa dataset destinasi Bali memenuhi standar mi
 
 | Aturan | Detail |
 |---|---|
-| Tidak boleh kosong | Baris dengan `kategori` kosong, default ke `"general"` untuk `category_main` |
-| Parsing tanda hubung | Pisahkan berdasarkan `" - "` (spasi-hubung-spasi) |
+| Default jika kosong | Jika `kategori` kosong atau NaN, set `category_main = "general"` dan `detail_category = null` |
+| Baris tetap disimpan | Untuk MVP, baris dengan `kategori` kosong tetap disimpan kecuali field kritikal lain gagal, seperti `nama_destinasi` kosong |
+| Parsing tanda hubung | Pisahkan berdasarkan karakter tanda hubung `-`, lalu trim whitespace pada setiap hasil split |
 | Case-insensitive | `"alam"`, `"Alam"`, `"ALAM"` semuanya → `"nature"` |
 | Mapping harus valid | `category_main` harus ada di `SUPPORTED_CATEGORIES` |
 | Sub-kategori fallback | Jika `detail_category` tidak cocok, gunakan fallback berdasarkan `category_main` |
+
+Parsing `kategori` harus menangani variasi whitespace secara ekuivalen. Contoh `Alam-Pantai`, `Alam - Pantai`, dan `Alam -Pantai` semuanya diperlakukan sebagai kategori utama `Alam` dan detail kategori `Pantai`.
 
 Mapping lengkap didefinisikan di [DATASET_CONTRACT.md](DATASET_CONTRACT.md) bagian Mapping Kategori.
 
@@ -95,7 +98,7 @@ Bangli, Klungkung, Buleleng, Jembrana
 
 | Aturan | Detail |
 |---|---|
-| Default ke string kosong | Jika kosong atau NaN, set ke `""` |
+| Default ke null | Jika kosong atau NaN, set ke `null` |
 | Trim whitespace | Hapus spasi di awal dan akhir |
 | Normalisasi kapitalisasi | Title case |
 
@@ -106,7 +109,7 @@ Bangli, Klungkung, Buleleng, Jembrana
 | Default ke NaN | Jika kosong atau tidak bisa diparse |
 | Range latitude | -9.5 sampai -8.0 (rentang Bali) |
 | Range longitude | 114.4 sampai 115.8 (rentang Bali) |
-| Di luar range | Set ke NaN dan `has_coordinates = False` |
+| Di luar range | Set ke NaN, `has_coordinates = False`, dan pada tahap feature engineering set `recommendation_eligible = False` |
 
 ### `maps_url` dan `image_url`
 
@@ -184,6 +187,7 @@ Destinasi dianggap layak untuk direkomendasikan (`recommendation_eligible = True
 | 3 | `sub_category` ada di `SUPPORTED_SUB_CATEGORIES` | Harus bisa difilter oleh pengguna |
 | 4 | `regency_city` tidak kosong | Harus bisa difilter berdasarkan lokasi |
 | 5 | `data_quality_score >= 0.4` | Data terlalu minim tidak layak direkomendasikan |
+| 6 | `latitude` dan `longitude` valid, non-null, dan dalam batas Bali | Field API rekomendasi membutuhkan koordinat non-null |
 
 Destinasi yang `recommendation_eligible = False`:
 
@@ -205,7 +209,7 @@ Destinasi yang `recommendation_eligible = False`:
 | `harga_destinasi` tidak bisa diparse | Set `estimated_ticket_price = 0` |
 | `rating` di luar range | Clamp ke 0.0 - 5.0 |
 | `jumlah_ulasan` negatif | Set ke 0 |
-| Koordinat di luar range Bali | Set ke NaN |
+| Koordinat kosong, NaN, atau di luar range Bali | Set ke NaN dan `has_coordinates = False` |
 | URL tidak valid | Set ke None |
 
 ### Tahap Feature Engineering
@@ -216,6 +220,7 @@ Destinasi yang `recommendation_eligible = False`:
 | `data_quality_score < 0.4` | Set `recommendation_eligible = False` |
 | `category_main` tidak di `SUPPORTED_CATEGORIES` | Set `recommendation_eligible = False` |
 | `sub_category` tidak di `SUPPORTED_SUB_CATEGORIES` | Set `recommendation_eligible = False` |
+| `latitude` atau `longitude` kosong, NaN, atau di luar range Bali | Set `recommendation_eligible = False` |
 
 ---
 
