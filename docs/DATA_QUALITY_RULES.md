@@ -83,9 +83,11 @@ Contoh konversi:
 
 | Aturan | Detail |
 |---|---|
-| Tidak boleh kosong | Baris dengan `kabupaten_kota` kosong harus di-drop atau diberi flag |
+| Tidak boleh kosong | Baris dengan `kabupaten_kota` kosong, NaN, atau hanya whitespace harus di-drop sebelum dataset processed dibuat |
 | Trim whitespace | Hapus spasi di awal dan akhir |
 | Normalisasi kapitalisasi | Title case: `"badung"` → `"Badung"` |
+
+Kolom processed `regency_city` harus non-null karena digunakan untuk location filtering dan dikirim kembali pada API response. Untuk MVP, jangan menambahkan flag column baru untuk lokasi kosong; baris yang gagal aturan ini harus di-drop.
 
 Kabupaten/kota yang diharapkan di Bali:
 
@@ -204,7 +206,7 @@ Destinasi yang `recommendation_eligible = False`:
 | Validasi | Aksi |
 |---|---|
 | `nama_destinasi` kosong | Drop baris |
-| `kabupaten_kota` kosong | Drop baris atau flag |
+| `kabupaten_kota` kosong, NaN, atau hanya whitespace | Drop baris |
 | Duplikat | Drop baris duplikat, pertahankan yang paling lengkap |
 | `harga_destinasi` tidak bisa diparse | Set `estimated_ticket_price = 0` |
 | `rating` di luar range | Clamp ke 0.0 - 5.0 |

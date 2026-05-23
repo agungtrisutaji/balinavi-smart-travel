@@ -5,7 +5,7 @@ Dokumen ini mendefinisikan skema dataset di setiap tahap data pipeline BaliNavi 
 ## Ikhtisar Tahapan Dataset
 
 ```text
-data/raw/bali_destinations.csv          ← dataset mentah dari sumber
+data/raw/bali_tourist_destination_with_harga_full_1452.csv  ← current raw source file
         │
         ▼  src/preprocessing/preprocess.py (target implementasi)
 data/processed/bali_destinations.csv    ← target dataset yang sudah dibersihkan
@@ -23,7 +23,9 @@ File sample tersedia di `data/sample/bali_destinations_sample.csv` untuk referen
 
 ## Skema Raw Dataset
 
-File: `data/raw/bali_destinations.csv`
+File saat ini: `data/raw/bali_tourist_destination_with_harga_full_1452.csv`
+
+Nama `data/raw/bali_destinations.csv` hanya boleh digunakan sebagai target canonical filename di masa depan jika dataset raw sudah distandardisasi atau di-rename. Nama tersebut bukan file raw source saat ini.
 
 Dataset mentah berasal dari sumber data destinasi Bali. Kolom menggunakan bahasa campuran sesuai sumber asli.
 
