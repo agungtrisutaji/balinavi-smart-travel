@@ -15,7 +15,7 @@ data/raw/*
 data/processed/*
 data/final/*
 artifacts/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/final/.gitkeep
-!artifacts/.gitkeep
+!data/raw/.gitignore
+!data/processed/.gitignore
+!data/final/.gitignore
+!artifacts/.gitignore
