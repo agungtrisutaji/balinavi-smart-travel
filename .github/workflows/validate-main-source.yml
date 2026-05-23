@@ -1,0 +1,38 @@
+name: Validate main source branch
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
+
+jobs:
+  validate-main-source:
+    name: validate-main-source
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_BRANCH: ${{ github.base_ref }}
+      HEAD_BRANCH: ${{ github.head_ref }}
+      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      CURRENT_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Allow only develop to merge into main
+        run: |
+          echo "Base branch: $BASE_BRANCH"
+          echo "Head branch: $HEAD_BRANCH"
+          echo "Head repo: $HEAD_REPO"
+          echo "Current repo: $CURRENT_REPO"
+
+          if [ "$BASE_BRANCH" = "main" ] && { [ "$HEAD_BRANCH" != "develop" ] || [ "$HEAD_REPO" != "$CURRENT_REPO" ]; }; then
+            echo "::error::Pull requests to main are only allowed from develop in the same repository."
+            exit 1
+          fi
+
+          echo "Valid PR source for main."
