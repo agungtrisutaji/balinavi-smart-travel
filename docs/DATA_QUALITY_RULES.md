@@ -177,8 +177,8 @@ data_quality_score = jumlah bobot dari field yang terpenuhi
 Contoh:
 
 - Baris dengan semua field terisi lengkap: `data_quality_score = 1.0`
-- Baris hanya dengan nama dan kabupaten: `data_quality_score = 0.30`
-- Baris tanpa deskripsi, tags, aktivitas, dan koordinat: `data_quality_score = 0.75`
+- Baris hanya dengan nama dan kabupaten: `data_quality_score = 0.35`
+- Baris yang kehilangan beberapa field opsional: `data_quality_score` berkurang sesuai jumlah bobot field yang tidak terpenuhi
 
 ---
 
