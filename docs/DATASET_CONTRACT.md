@@ -92,7 +92,7 @@ Skema ini adalah target kontrak untuk dataset yang sudah dibersihkan dan dinorma
 | `has_description` | boolean | tidak | `True` jika deskripsi tersedia dan tidak blank |
 | `data_quality_score` | float | tidak | Skor kualitas data 0.0 - 1.0 (lihat Data Quality Rules) |
 
-Untuk representasi CSV, cell kosong pada kolom nullable dapat terbaca sebagai NaN saat loading. Setelah normalisasi, kolom teks opsional seperti `description`, `tags`, `activity`, dan `district` direpresentasikan sebagai `null` jika nilainya tidak tersedia.
+Untuk representasi CSV, cell kosong pada kolom nullable dapat terbaca sebagai NaN saat loading. Setelah normalisasi, kolom teks opsional seperti `description`, `tags`, dan `activity` direpresentasikan sebagai `null` jika nilainya tidak tersedia. Kolom `district` pada skema processed bersifat non-null dan harus diisi placeholder seperti `"Unknown"` jika nilai sumber tidak tersedia.
 
 ### Mapping Kategori (`kategori` → `category_main`)
 
