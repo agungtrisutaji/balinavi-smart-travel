@@ -100,9 +100,13 @@ Bangli, Klungkung, Buleleng, Jembrana
 
 | Aturan | Detail |
 |---|---|
-| Default ke null | Jika kosong atau NaN, set ke `null` |
-| Trim whitespace | Hapus spasi di awal dan akhir |
-| Normalisasi kapitalisasi | Title case |
+| Default ke placeholder non-null | Jika kosong, hanya whitespace, atau NaN, set ke `"Unknown"` |
+| Trim whitespace | Hapus spasi di awal dan akhir sebelum validasi/fallback |
+| Normalisasi kapitalisasi | Title case untuk nilai valid; placeholder tetap `"Unknown"` |
+
+Kolom processed `district` harus bertipe string non-null agar konsisten dengan kontrak dataset processed dan schema API `DestinationRecommendation`. Untuk MVP, nilai lokasi tingkat kecamatan yang tidak tersedia tidak menyebabkan baris di-drop; gunakan placeholder `"Unknown"` sebagai fallback non-null.
+
+Dalam perhitungan `data_quality_score`, placeholder seperti `"Unknown"` harus diperlakukan sebagai nilai fallback, bukan sebagai bukti bahwa data kecamatan lengkap. Artinya, placeholder ini boleh menjaga kontrak non-null, tetapi tidak boleh otomatis menambah skor kelengkapan/kualitas untuk komponen `district`.
 
 ### `latitude` dan `longitude`
 
