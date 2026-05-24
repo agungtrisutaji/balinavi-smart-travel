@@ -202,7 +202,11 @@ Dataset model-ready yang dihasilkan oleh `src/features/build_features.py`. Beris
 | `budget_tiers` | string | tidak | Budget tier yang cocok, dipisahkan koma: `"low,medium,high"` |
 | `recommendation_eligible` | boolean | tidak | Apakah destinasi layak direkomendasikan (lihat Aturan Eligibility) |
 
-`estimated_ticket_total` bukan field persisted pada final dataset secara default. Untuk MVP dan implementasi backend saat ini, field ini masih merupakan field runtime API/response yang bersifat kontekstual dan **belum secara andal menghitung total grup berbasis `num_people`**. Backend sudah menerima parameter `num_people` pada request, tetapi perhitungan `estimated_ticket_total` saat ini belum selalu memakainya secara penuh dan dalam implementasi yang ada nilainya masih dapat sama dengan `estimated_ticket_price` (estimasi harga per orang) atau bersifat placeholder/dummy. Jika di masa depan logika runtime diperbarui agar konsisten menghitung total grup, maka kontrak ini dapat diperbarui sehingga `estimated_ticket_total` benar-benar merepresentasikan `estimated_ticket_price * num_people`. Field tersebut hanya boleh dihasilkan ke dataset/file turunan jika ada kebutuhan eksplisit untuk konteks request tertentu.
+`estimated_ticket_total` bukan field persisted pada final dataset secara default.
+
+Untuk MVP dan implementasi backend saat ini, field ini masih merupakan field runtime API/response yang bersifat kontekstual dan **belum secara andal menghitung total grup berbasis `num_people`**. Backend sudah menerima parameter `num_people` pada request, tetapi perhitungan `estimated_ticket_total` saat ini belum selalu memakainya secara penuh. Dalam implementasi yang ada, nilainya masih dapat sama dengan `estimated_ticket_price` (estimasi harga per orang) atau bersifat placeholder/dummy.
+
+Jika di masa depan logika runtime diperbarui agar konsisten menghitung total grup, maka kontrak ini dapat diperbarui sehingga `estimated_ticket_total` benar-benar merepresentasikan `estimated_ticket_price * num_people`. Field tersebut hanya boleh dihasilkan ke dataset/file turunan jika ada kebutuhan eksplisit untuk konteks request tertentu.
 
 ### Konstruksi `content_text`
 
@@ -290,7 +294,7 @@ Kolom pada final dataset dipetakan ke field pada `DestinationRecommendation` sch
 | `district` | `district` | Langsung |
 | `regency_city` | `regency_city` | Langsung |
 | `estimated_ticket_price` | `estimated_ticket_price` | Langsung; harga tiket per orang |
-| (dihitung saat runtime) | `estimated_ticket_total` | Untuk MVP saat ini nilainya masih bisa sama dengan `estimated_ticket_price` (per-orang/placeholder); target ke depan adalah `estimated_ticket_price * num_people` untuk request saat ini |
+| (dihitung saat runtime) | `estimated_ticket_total` | Untuk MVP saat ini nilainya masih bisa sama dengan `estimated_ticket_price` (per-orang/placeholder); target ke depan adalah `estimated_ticket_price * num_people` untuk setiap request pengguna |
 | `rating` | `rating` | Langsung |
 | `review_count` | `review_count` | Langsung |
 | `popularity_score` | `popularity_score` | Langsung |
