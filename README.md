@@ -200,6 +200,8 @@ feature/docker-ci
 | [`docs/BACKEND_GUIDE.md`](docs/BACKEND_GUIDE.md) | Panduan FastAPI backend |
 | [`docs/FRONTEND_GUIDE.md`](docs/FRONTEND_GUIDE.md) | Panduan Streamlit frontend |
 | [`docs/DATA_PIPELINE_GUIDE.md`](docs/DATA_PIPELINE_GUIDE.md) | Panduan data pipeline |
+| [`docs/DATASET_CONTRACT.md`](docs/DATASET_CONTRACT.md) | Kontrak skema dataset raw, processed, final |
+| [`docs/DATA_QUALITY_RULES.md`](docs/DATA_QUALITY_RULES.md) | Aturan validasi dan kualitas data |
 | [`docs/RECOMMENDER_GUIDE.md`](docs/RECOMMENDER_GUIDE.md) | Panduan sistem rekomendasi |
 | [`docs/BUDGET_ENGINE_GUIDE.md`](docs/BUDGET_ENGINE_GUIDE.md) | Panduan budget tier dan alokasi |
 | [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) | Panduan persiapan dan menjalankan demo |
