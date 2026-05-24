@@ -165,8 +165,22 @@ Skor kualitas dihitung per baris berdasarkan kelengkapan field:
 | `rating > 0.0` | 0.05 |
 | `review_count > 0` | 0.05 |
 | `has_coordinates == True` | 0.05 |
-| `estimated_ticket_price >= 0` (sudah pasti) | 0.05 |
+| `has_price_info == True` | 0.05 |
 | **Total** | **1.00** |
+
+### Definisi `has_price_info`
+
+`has_price_info` adalah sinyal validasi turunan (derived), bukan kolom yang harus dipersistensi di dataset. Nilainya ditentukan saat preprocessing berdasarkan apakah informasi harga mentah benar-benar tersedia dan bisa diparse:
+
+| Kondisi raw `harga_destinasi` | `has_price_info` | Penjelasan |
+|---|---|---|
+| Angka valid (`50000`, `"50000"`, `"Rp 50.000"`) | `True` | Harga mentah ada dan berhasil diparse |
+| `"Gratis"`, `"gratis"`, `"free"` | `True` | Informasi harga eksplisit: gratis |
+| `"0"` atau `0` (eksplisit di raw) | `True` | Harga eksplisit nol |
+| Kosong, NaN, None | `False` | Tidak ada informasi harga, default 0 digunakan sebagai fallback |
+| String tidak bisa diparse | `False` | Parsing gagal, default 0 digunakan sebagai fallback |
+
+`has_price_info` digunakan hanya untuk perhitungan `data_quality_score`. Kolom `estimated_ticket_price` tetap di-set ke 0 sebagai fallback ketika `has_price_info == False`, sesuai aturan Mapping Harga di [DATASET_CONTRACT.md](DATASET_CONTRACT.md).
 
 Rumus:
 
@@ -176,9 +190,9 @@ data_quality_score = jumlah bobot dari field yang terpenuhi
 
 Contoh:
 
-- Baris dengan semua field terisi lengkap: `data_quality_score = 1.0`
-- Baris hanya dengan nama dan kabupaten: `data_quality_score = 0.35`
-- Baris yang kehilangan beberapa field opsional: `data_quality_score` berkurang sesuai jumlah bobot field yang tidak terpenuhi
+- Baris dengan semua field terisi lengkap dan harga tersedia: `data_quality_score = 1.0`
+- Baris hanya dengan nama dan kabupaten (tanpa harga, tanpa deskripsi, dll): `data_quality_score = 0.30`
+- Baris lengkap tapi harga tidak tersedia (fallback 0): `data_quality_score = 0.95`
 
 ---
 
