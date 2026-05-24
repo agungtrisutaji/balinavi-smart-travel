@@ -290,7 +290,7 @@ Kolom pada final dataset dipetakan ke field pada `DestinationRecommendation` sch
 | `district` | `district` | Langsung |
 | `regency_city` | `regency_city` | Langsung |
 | `estimated_ticket_price` | `estimated_ticket_price` | Langsung; harga tiket per orang |
-| (dihitung saat runtime) | `estimated_ticket_total` | `estimated_ticket_price * num_people` untuk request saat ini |
+| (dihitung saat runtime) | `estimated_ticket_total` | Untuk MVP saat ini nilainya masih bisa sama dengan `estimated_ticket_price` (per-orang/placeholder); target ke depan adalah `estimated_ticket_price * num_people` untuk request saat ini |
 | `rating` | `rating` | Langsung |
 | `review_count` | `review_count` | Langsung |
 | `popularity_score` | `popularity_score` | Langsung |
@@ -301,7 +301,7 @@ Kolom pada final dataset dipetakan ke field pada `DestinationRecommendation` sch
 | (dihitung saat runtime) | `score` | Cosine similarity score |
 | (dihitung saat runtime) | `match_reasons` | Alasan kecocokan |
 
-API response harus mengembalikan `estimated_ticket_total` sebagai total biaya tiket untuk group pada request saat ini, bukan harga per orang. Frontend harus menampilkan dan memperlakukan field ini sebagai total untuk group terpilih.
+Pada MVP saat ini, `estimated_ticket_total` di API response masih dapat berperilaku sebagai nilai per-orang/placeholder dan belum selalu menjadi total group berbasis `num_people`. Frontend tidak boleh mengasumsikan nilai ini selalu total group sampai logika runtime diharden agar konsisten menghitung `estimated_ticket_price * num_people`.
 
 ---
 

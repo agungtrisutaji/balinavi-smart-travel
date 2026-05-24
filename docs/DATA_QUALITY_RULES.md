@@ -161,7 +161,7 @@ Skor kualitas dihitung per baris berdasarkan kelengkapan field:
 | `tags` tidak kosong | 0.05 |
 | `activity` tidak kosong | 0.05 |
 | `regency_city` tidak kosong | 0.10 |
-| `district` tidak kosong | 0.05 |
+| `district` terisi dan bukan placeholder (`"Unknown"`/`"-"`) | 0.05 |
 | `rating > 0.0` | 0.05 |
 | `review_count > 0` | 0.05 |
 | `has_coordinates == True` | 0.05 |
