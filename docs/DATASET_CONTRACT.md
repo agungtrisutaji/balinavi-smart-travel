@@ -78,7 +78,7 @@ Skema ini adalah target kontrak untuk dataset yang sudah dibersihkan dan dinorma
 | `tags` | string | ya | Tags, `null` jika tidak ada |
 | `activity` | string | ya | Aktivitas, `null` jika tidak ada |
 | `regency_city` | string | tidak | Kabupaten atau kota |
-| `district` | string | tidak | Kecamatan; jika tidak tersedia pada data sumber, wajib diisi fallback non-null seperti `"Unknown"` atau `"-"` saat preprocessing |
+| `district` | string | tidak | Kecamatan; jika tidak tersedia pada data sumber, wajib diisi fallback non-null seperti `"Unknown"` atau `"-"` saat preprocessing dan tidak boleh direpresentasikan sebagai `null` |
 | `estimated_ticket_price` | integer | tidak | Harga tiket per orang dalam IDR (lihat Mapping Harga) |
 | `is_free` | boolean | tidak | `True` jika harga 0 atau `"Gratis"` |
 | `price_level` | string | tidak | Level harga: `"free"`, `"low"`, `"medium"`, `"high"` |
