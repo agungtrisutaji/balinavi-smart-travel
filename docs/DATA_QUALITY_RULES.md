@@ -170,7 +170,7 @@ Skor kualitas dihitung per baris berdasarkan kelengkapan field:
 
 ### Definisi `has_price_info`
 
-`has_price_info` adalah sinyal validasi turunan (derived), bukan kolom yang harus dipersistensi di dataset. Nilainya ditentukan saat preprocessing berdasarkan apakah informasi harga mentah benar-benar tersedia dan bisa diparse:
+`has_price_info` adalah sinyal validasi turunan (derived), bukan kolom yang harus disimpan di dataset. Nilainya ditentukan saat preprocessing berdasarkan apakah informasi harga mentah benar-benar tersedia dan bisa diparse:
 
 | Kondisi raw `harga_destinasi` | `has_price_info` | Penjelasan |
 |---|---|---|
