@@ -15,7 +15,7 @@ def fetch_metadata() -> dict:
 
 
 def request_trip_plan(payload: dict) -> dict:
-    response = requests.post(f"https://balinavi-smart-travel-1.onrender.com//plan-trip", json=payload, timeout=20)
+    response = requests.post(f"https://balinavi-smart-travel-1.onrender.com/plan-trip", json=payload, timeout=20)
     response.raise_for_status()
     return response.json()
 
