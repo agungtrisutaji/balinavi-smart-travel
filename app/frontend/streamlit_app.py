@@ -9,13 +9,13 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 
 def fetch_metadata() -> dict:
-    response = requests.get(f"https://balinavi-smart-travel-1.onrender.com/metadata", timeout=10)
+    response = requests.get(f"https://balinavi-smart-travel.onrender.com/metadata", timeout=10)
     response.raise_for_status()
     return response.json()
 
 
 def request_trip_plan(payload: dict) -> dict:
-    response = requests.post(f"https://balinavi-smart-travel-1.onrender.com/plan-trip", json=payload, timeout=20)
+    response = requests.post(f"https://balinavi-smart-travel.onrender.com/plan-trip", json=payload, timeout=20)
     response.raise_for_status()
     return response.json()
 
