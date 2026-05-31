@@ -19,3 +19,5 @@ artifacts/*
 !data/processed/.gitignore
 !data/final/.gitignore
 !artifacts/.gitignore
+
+skills-lock.json
