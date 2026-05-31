@@ -109,13 +109,13 @@ Artifact disimpan menggunakan Joblib.
 
 ## Atribut Dataset Destinasi
 
-Dataset destinasi Bali diharapkan memiliki atribut berikut:
+Dataset destinasi Bali pada tahap processed dan final diharapkan memiliki atribut berikut:
 
 | Atribut | Tipe | Deskripsi |
 |---|---|---|
 | destination_id | string | ID unik destinasi |
 | name | string | Nama destinasi |
-| category | string | Kategori utama (nature, culture, recreation, general) |
+| category_main | string | Kategori utama (nature, culture, recreation, general) |
 | sub_category | string | Sub-kategori (beach, temple, waterfall, dll) |
 | district | string | Kecamatan |
 | regency_city | string | Kabupaten atau kota |
@@ -126,6 +126,8 @@ Dataset destinasi Bali diharapkan memiliki atribut berikut:
 | longitude | float | Koordinat bujur |
 | maps_url | string | URL Google Maps (opsional) |
 | image_url | string | URL gambar (opsional) |
+
+Catatan: Field API response `category` pada schema `DestinationRecommendation` dipetakan dari kolom dataset `category_main`. Mapping ini didefinisikan di [DATASET_CONTRACT.md](DATASET_CONTRACT.md) bagian Mapping ke API Response.
 
 ## Status Implementasi Saat Ini
 
@@ -149,6 +151,7 @@ Setelah data pipeline diimplementasikan:
 
 ## Referensi
 
+- Kontrak dataset: [DATASET_CONTRACT.md](DATASET_CONTRACT.md)
 - Arsitektur: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Scope MVP: [MVP_SCOPE.md](MVP_SCOPE.md)
 - Panduan Recommender: [RECOMMENDER_GUIDE.md](RECOMMENDER_GUIDE.md)
