@@ -180,7 +180,7 @@ Skor kualitas dihitung per baris berdasarkan kelengkapan field:
 | Kosong, NaN, None | `False` | Tidak ada informasi harga, default 0 digunakan sebagai fallback |
 | String tidak bisa diparse | `False` | Parsing gagal, default 0 digunakan sebagai fallback |
 
-`has_price_info` digunakan hanya untuk perhitungan `data_quality_score`. Kolom `estimated_ticket_price` tetap di-set ke 0 sebagai fallback ketika `has_price_info == False`, sesuai aturan Mapping Harga di [DATASET_CONTRACT.md](DATASET_CONTRACT.md).
+`has_price_info` digunakan hanya untuk perhitungan `data_quality_score`. Dalam preprocessing, kolom `estimated_ticket_price` tetap di-set ke 0 sebagai fallback ketika `has_price_info == False`. Perilaku fallback untuk nilai harga yang tidak tersedia konsisten dengan Mapping Harga di [DATASET_CONTRACT.md](DATASET_CONTRACT.md), sedangkan kasus string yang tidak bisa diparse dijelaskan secara eksplisit pada tabel di atas.
 
 Rumus:
 
