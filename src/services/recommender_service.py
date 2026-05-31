@@ -1,3 +1,34 @@
+"""
+Recommender service layer for BaliNavi.
+
+Uses ContentBasedRecommender when artifacts are available,
+falls back to DummyRecommender with DUMMY_DESTINATIONS otherwise.
+"""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+
+from src.models.recommender import ContentBasedRecommender, DummyRecommender
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Artifacts directory
+# ---------------------------------------------------------------------------
+ARTIFACTS_DIR = "artifacts"
+_REQUIRED_ARTIFACTS = ["vectorizer.pkl", "tfidf_matrix.pkl", "destination_data.pkl"]
+
+# ---------------------------------------------------------------------------
+# Singleton state
+# ---------------------------------------------------------------------------
+_recommender_instance: ContentBasedRecommender | None = None
+_use_real_model: bool | None = None  # None = not yet checked
+
+# ---------------------------------------------------------------------------
+# Dummy data (backward compatibility / fallback)
+# ---------------------------------------------------------------------------
 DUMMY_DESTINATIONS = [
     {
         "destination_id": "DUMMY-001",
@@ -94,6 +125,39 @@ DUMMY_DESTINATIONS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# Internal: lazy-load the real model or fall back to dummy
+# ---------------------------------------------------------------------------
+def _artifacts_available() -> bool:
+    """Return True if all required artifact files exist."""
+    base = Path(ARTIFACTS_DIR)
+    return all((base / f).is_file() for f in _REQUIRED_ARTIFACTS)
+
+
+def _get_recommender() -> ContentBasedRecommender | None:
+    """Return the singleton ContentBasedRecommender or None (→ use dummy)."""
+    global _recommender_instance, _use_real_model
+
+    if _use_real_model is None:
+        # First call – check artifact availability
+        if _artifacts_available():
+            try:
+                _recommender_instance = ContentBasedRecommender.load(ARTIFACTS_DIR)
+                _use_real_model = True
+                logger.info("Loaded real ContentBasedRecommender from %s/", ARTIFACTS_DIR)
+            except Exception:
+                logger.exception("Failed to load artifacts; falling back to dummy.")
+                _use_real_model = False
+        else:
+            logger.info("Artifacts not found in %s/; using DummyRecommender.", ARTIFACTS_DIR)
+            _use_real_model = False
+
+    return _recommender_instance if _use_real_model else None
+
+
+# ---------------------------------------------------------------------------
+# Dummy helpers (same as original code)
+# ---------------------------------------------------------------------------
 def _build_match_reasons(destination: dict, budget_tier: str) -> list[str]:
     reasons = list(destination["match_reasons"])
     budget_reason = f"Suitable for {budget_tier} budget tier"
@@ -112,13 +176,14 @@ def _format_destination(destination: dict, budget_tier: str) -> dict:
     return formatted
 
 
-def recommend_destinations(
+def _recommend_dummy(
     budget_tier: str,
     preferred_categories: list[str] | None = None,
     preferred_sub_categories: list[str] | None = None,
     preferred_locations: list[str] | None = None,
     top_k: int = 5,
 ) -> list[dict]:
+    """Original dummy-based recommendation logic."""
     categories = set(preferred_categories or [])
     sub_categories = set(preferred_sub_categories or [])
     locations = set(preferred_locations or [])
@@ -140,3 +205,39 @@ def recommend_destinations(
         key=lambda destination: destination["score"],
         reverse=True,
     )[:top_k]
+
+
+# ---------------------------------------------------------------------------
+# Public API  (signature unchanged – backward compatible with routes.py)
+# ---------------------------------------------------------------------------
+def recommend_destinations(
+    budget_tier: str,
+    preferred_categories: list[str] | None = None,
+    preferred_sub_categories: list[str] | None = None,
+    preferred_locations: list[str] | None = None,
+    top_k: int = 5,
+) -> list[dict]:
+    """Return ranked destination recommendations.
+
+    Delegates to ContentBasedRecommender when artifacts are available,
+    otherwise falls back to the legacy dummy data.
+    """
+    recommender = _get_recommender()
+
+    if recommender is not None:
+        return recommender.recommend(
+            budget_tier=budget_tier,
+            preferred_categories=preferred_categories,
+            preferred_sub_categories=preferred_sub_categories,
+            preferred_locations=preferred_locations,
+            top_k=top_k,
+        )
+
+    # Fallback → dummy
+    return _recommend_dummy(
+        budget_tier=budget_tier,
+        preferred_categories=preferred_categories,
+        preferred_sub_categories=preferred_sub_categories,
+        preferred_locations=preferred_locations,
+        top_k=top_k,
+    )
