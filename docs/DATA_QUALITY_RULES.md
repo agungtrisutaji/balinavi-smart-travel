@@ -100,9 +100,13 @@ Bangli, Klungkung, Buleleng, Jembrana
 
 | Aturan | Detail |
 |---|---|
-| Default ke null | Jika kosong atau NaN, set ke `null` |
-| Trim whitespace | Hapus spasi di awal dan akhir |
-| Normalisasi kapitalisasi | Title case |
+| Default ke placeholder non-null | Jika kosong, hanya whitespace, atau NaN, set ke `"Unknown"` |
+| Trim whitespace | Hapus spasi di awal dan akhir sebelum validasi/fallback |
+| Normalisasi kapitalisasi | Title case untuk nilai valid; placeholder tetap `"Unknown"` |
+
+Kolom processed `district` harus bertipe string non-null agar konsisten dengan kontrak dataset processed dan schema API `DestinationRecommendation`. Untuk MVP, nilai lokasi tingkat kecamatan yang tidak tersedia tidak menyebabkan baris di-drop; gunakan placeholder `"Unknown"` sebagai fallback non-null.
+
+Dalam perhitungan `data_quality_score`, placeholder seperti `"Unknown"` harus diperlakukan sebagai nilai fallback, bukan sebagai bukti bahwa data kecamatan lengkap. Artinya, placeholder ini boleh menjaga kontrak non-null, tetapi tidak boleh otomatis menambah skor kelengkapan/kualitas untuk komponen `district`.
 
 ### `latitude` dan `longitude`
 
@@ -157,12 +161,26 @@ Skor kualitas dihitung per baris berdasarkan kelengkapan field:
 | `tags` tidak kosong | 0.05 |
 | `activity` tidak kosong | 0.05 |
 | `regency_city` tidak kosong | 0.10 |
-| `district` tidak kosong | 0.05 |
+| `district` terisi dan bukan placeholder (`"Unknown"`/`"-"`) | 0.05 |
 | `rating > 0.0` | 0.05 |
 | `review_count > 0` | 0.05 |
 | `has_coordinates == True` | 0.05 |
-| `estimated_ticket_price >= 0` (sudah pasti) | 0.05 |
+| `has_price_info == True` | 0.05 |
 | **Total** | **1.00** |
+
+### Definisi `has_price_info`
+
+`has_price_info` adalah sinyal validasi turunan (derived), bukan kolom yang harus disimpan di dataset. Nilainya ditentukan saat preprocessing berdasarkan apakah informasi harga mentah benar-benar tersedia dan bisa diparse:
+
+| Kondisi raw `harga_destinasi` | `has_price_info` | Penjelasan |
+|---|---|---|
+| Angka valid (`50000`, `"50000"`, `"Rp 50.000"`) | `True` | Harga mentah ada dan berhasil diparse |
+| `"Gratis"`, `"gratis"`, `"free"` | `True` | Informasi harga eksplisit: gratis |
+| `"0"` atau `0` (eksplisit di raw) | `True` | Harga eksplisit nol |
+| Kosong, NaN, None | `False` | Tidak ada informasi harga, default 0 digunakan sebagai fallback |
+| String tidak bisa diparse | `False` | Parsing gagal, default 0 digunakan sebagai fallback |
+
+`has_price_info` digunakan hanya untuk perhitungan `data_quality_score`. Dalam preprocessing, kolom `estimated_ticket_price` tetap di-set ke 0 sebagai fallback ketika `has_price_info == False`. Perilaku fallback untuk nilai harga yang tidak tersedia konsisten dengan Mapping Harga di [DATASET_CONTRACT.md](DATASET_CONTRACT.md), sedangkan kasus string yang tidak bisa diparse dijelaskan secara eksplisit pada tabel di atas.
 
 Rumus:
 
@@ -172,9 +190,9 @@ data_quality_score = jumlah bobot dari field yang terpenuhi
 
 Contoh:
 
-- Baris dengan semua field terisi lengkap: `data_quality_score = 1.0`
-- Baris hanya dengan nama dan kabupaten: `data_quality_score = 0.30`
-- Baris tanpa deskripsi, tags, aktivitas, dan koordinat: `data_quality_score = 0.75`
+- Baris dengan semua field terisi lengkap dan harga tersedia: `data_quality_score = 1.0`
+- Baris hanya dengan nama dan kabupaten (tanpa harga, tanpa deskripsi, dll): `data_quality_score = 0.30`
+- Baris lengkap tapi harga tidak tersedia (fallback 0): `data_quality_score = 0.95`
 
 ---
 

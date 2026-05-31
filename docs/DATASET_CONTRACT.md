@@ -78,7 +78,7 @@ Skema ini adalah target kontrak untuk dataset yang sudah dibersihkan dan dinorma
 | `tags` | string | ya | Tags, `null` jika tidak ada |
 | `activity` | string | ya | Aktivitas, `null` jika tidak ada |
 | `regency_city` | string | tidak | Kabupaten atau kota |
-| `district` | string | tidak | Kecamatan; jika tidak tersedia pada data sumber, wajib diisi fallback non-null seperti `"Unknown"` atau `"-"` saat preprocessing |
+| `district` | string | tidak | Kecamatan; jika tidak tersedia pada data sumber, wajib diisi fallback non-null seperti `"Unknown"` atau `"-"` saat preprocessing dan tidak boleh direpresentasikan sebagai `null` |
 | `estimated_ticket_price` | integer | tidak | Harga tiket per orang dalam IDR (lihat Mapping Harga) |
 | `is_free` | boolean | tidak | `True` jika harga 0 atau `"Gratis"` |
 | `price_level` | string | tidak | Level harga: `"free"`, `"low"`, `"medium"`, `"high"` |
@@ -92,7 +92,7 @@ Skema ini adalah target kontrak untuk dataset yang sudah dibersihkan dan dinorma
 | `has_description` | boolean | tidak | `True` jika deskripsi tersedia dan tidak blank |
 | `data_quality_score` | float | tidak | Skor kualitas data 0.0 - 1.0 (lihat Data Quality Rules) |
 
-Untuk representasi CSV, cell kosong pada kolom nullable dapat terbaca sebagai NaN saat loading. Setelah normalisasi, kolom teks opsional seperti `description`, `tags`, `activity`, dan `district` direpresentasikan sebagai `null` jika nilainya tidak tersedia.
+Untuk representasi CSV, cell kosong pada kolom nullable dapat terbaca sebagai NaN saat loading. Setelah normalisasi, kolom teks opsional seperti `description`, `tags`, dan `activity` direpresentasikan sebagai `null` jika nilainya tidak tersedia. Kolom `district` pada skema processed bersifat non-null dan harus diisi placeholder seperti `"Unknown"` jika nilai sumber tidak tersedia.
 
 ### Mapping Kategori (`kategori` → `category_main`)
 
@@ -202,7 +202,11 @@ Dataset model-ready yang dihasilkan oleh `src/features/build_features.py`. Beris
 | `budget_tiers` | string | tidak | Budget tier yang cocok, dipisahkan koma: `"low,medium,high"` |
 | `recommendation_eligible` | boolean | tidak | Apakah destinasi layak direkomendasikan (lihat Aturan Eligibility) |
 
-`estimated_ticket_total` bukan field persisted pada final dataset secara default. Field ini adalah field runtime API untuk konteks request tertentu dan dihitung dari `estimated_ticket_price * num_people`. Field tersebut hanya boleh dihasilkan ke dataset/file turunan jika ada kebutuhan eksplisit untuk konteks request tertentu.
+`estimated_ticket_total` bukan field persisted pada final dataset secara default.
+
+Untuk MVP dan implementasi backend saat ini, field ini masih merupakan field runtime API/response yang bersifat kontekstual dan **belum secara andal menghitung total grup berbasis `num_people`**. Backend sudah menerima parameter `num_people` pada request, tetapi perhitungan `estimated_ticket_total` saat ini belum selalu memakainya secara penuh. Dalam implementasi yang ada, nilainya masih dapat sama dengan `estimated_ticket_price` (estimasi harga per orang) atau bersifat placeholder/dummy.
+
+Jika di masa depan logika runtime diperbarui agar konsisten menghitung total grup, maka kontrak ini dapat diperbarui sehingga `estimated_ticket_total` benar-benar merepresentasikan `estimated_ticket_price * num_people`. Field tersebut hanya boleh dihasilkan ke dataset/file turunan jika ada kebutuhan eksplisit untuk konteks request tertentu.
 
 ### Konstruksi `content_text`
 
@@ -290,7 +294,7 @@ Kolom pada final dataset dipetakan ke field pada `DestinationRecommendation` sch
 | `district` | `district` | Langsung |
 | `regency_city` | `regency_city` | Langsung |
 | `estimated_ticket_price` | `estimated_ticket_price` | Langsung; harga tiket per orang |
-| (dihitung saat runtime) | `estimated_ticket_total` | `estimated_ticket_price * num_people` untuk request saat ini |
+| (dihitung saat runtime) | `estimated_ticket_total` | Untuk MVP saat ini nilainya masih bisa sama dengan `estimated_ticket_price` (per-orang/placeholder); target ke depan adalah `estimated_ticket_price * num_people` untuk setiap request pengguna |
 | `rating` | `rating` | Langsung |
 | `review_count` | `review_count` | Langsung |
 | `popularity_score` | `popularity_score` | Langsung |
@@ -301,7 +305,7 @@ Kolom pada final dataset dipetakan ke field pada `DestinationRecommendation` sch
 | (dihitung saat runtime) | `score` | Cosine similarity score |
 | (dihitung saat runtime) | `match_reasons` | Alasan kecocokan |
 
-API response harus mengembalikan `estimated_ticket_total` sebagai total biaya tiket untuk group pada request saat ini, bukan harga per orang. Frontend harus menampilkan dan memperlakukan field ini sebagai total untuk group terpilih.
+Pada MVP saat ini, `estimated_ticket_total` di API response masih dapat berperilaku sebagai nilai per-orang/placeholder dan belum selalu menjadi total group berbasis `num_people`. Frontend tidak boleh mengasumsikan nilai ini selalu total group sampai logika runtime diharden agar konsisten menghitung `estimated_ticket_price * num_people`.
 
 ---
 
