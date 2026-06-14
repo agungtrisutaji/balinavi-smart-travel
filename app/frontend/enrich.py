@@ -207,99 +207,130 @@ def get_google_place_photo(place_name: str) -> Optional[str]:
     return photos[0] if photos else None
 
 
+@st.cache_data(ttl=60 * 60 * 24, show_spinner=False)
+def _wiki_find_title(lang: str, place_name: str, query: str) -> Optional[str]:
+    """Cari judul artikel Wikipedia yang cocok dengan nama tempat."""
+    try:
+        resp = requests.get(
+            f"https://{lang}.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "list": "search",
+                "srsearch": query,
+                "format": "json",
+                "srlimit": 6,
+            },
+            headers=WIKI_HEADERS,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        results = resp.json().get("query", {}).get("search", [])
+        for item in results:
+            title = item.get("title", "")
+            if _title_matches_place(place_name, title):
+                return title
+    except Exception:
+        return None
+    return None
+
+
+def _wiki_fetch_intro(lang: str, title: str) -> Dict[str, Any]:
+    """
+    Ambil paragraf intro artikel (beberapa kalimat) memakai TextExtracts.
+    Mengembalikan {"extract": str|None, "is_disambiguation": bool, "url": str}.
+    """
+    try:
+        resp = requests.get(
+            f"https://{lang}.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "prop": "extracts|pageprops",
+                "exintro": 1,
+                "explaintext": 1,
+                "exsentences": 5,
+                "redirects": 1,
+                "titles": title,
+                "format": "json",
+            },
+            headers=WIKI_HEADERS,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        pages = resp.json().get("query", {}).get("pages", {})
+        for page in pages.values():
+            extract = (page.get("extract") or "").strip()
+            is_disamb = "disambiguation" in (page.get("pageprops") or {})
+            url = (
+                f"https://{lang}.wikipedia.org/wiki/"
+                f"{quote(page.get('title', title).replace(' ', '_'))}"
+            )
+            return {"extract": extract, "is_disambiguation": is_disamb, "url": url}
+    except Exception:
+        pass
+    return {"extract": None, "is_disambiguation": False, "url": ""}
+
+
 @st.cache_data(ttl=60 * 60 * 24 * 7, show_spinner=False)
 def get_wikipedia_description(place_name: str) -> Dict[str, Any]:
     """
-    Ambil deskripsi/ringkasan tempat dari Wikipedia (ID lalu EN).
+    Ambil deskripsi tempat berupa PARAGRAF SINGKAT (beberapa kalimat) dari
+    Wikipedia (ID lalu EN), memakai TextExtracts (intro section).
 
-    Akurasi dijaga: dari beberapa kandidat hasil pencarian, hanya artikel
-    yang JUDULNYA cocok dengan nama tempat yang dipakai (lihat
-    _title_matches_place). Halaman disambiguasi juga ditolak. Ini mencegah
-    deskripsi nyasar (mis. 'Marriott' untuk 'Balangan Beach').
+    Akurasi dijaga: hanya artikel yang JUDULNYA cocok dengan nama tempat
+    yang dipakai (lihat _title_matches_place), dan halaman disambiguasi
+    ditolak. Beberapa variasi query dicoba agar lebih banyak tempat
+    mendapatkan deskripsi nyata.
 
     Tidak membutuhkan API key. Mengembalikan dict:
       { "description": str, "source": str, "source_url": Optional[str] }
-
-    Jika tidak ada artikel yang cocok, mengembalikan fallback description.
     """
     if place_name:
+        # Variasi query: lengkap, tanpa kata generik, dan nama mentah.
+        sig = " ".join(_significant_tokens(place_name)).strip()
+        queries = [f"{place_name} Bali"]
+        if sig and sig.lower() != place_name.lower():
+            queries.append(f"{sig} Bali")
+        queries.append(place_name)
+
         for lang in ("id", "en"):
-            try:
-                search_url = f"https://{lang}.wikipedia.org/w/api.php"
-                search_params = {
-                    "action": "query",
-                    "list": "search",
-                    "srsearch": f"{place_name} Bali",
-                    "format": "json",
-                    "srlimit": 5,
+            seen_titles = set()
+            for query in queries:
+                title = _wiki_find_title(lang, place_name, query)
+                if not title or title in seen_titles:
+                    continue
+                seen_titles.add(title)
+
+                intro = _wiki_fetch_intro(lang, title)
+                if intro["is_disambiguation"]:
+                    continue
+
+                extract = intro["extract"]
+                if not extract or len(extract) < 60:
+                    continue
+
+                # Pastikan artikel benar-benar tentang tempat di Bali
+                # (mencegah nyasar, mis. 'Kabupaten Balangan' di Kalimantan).
+                if "bali" not in extract.lower() and "bali" not in title.lower():
+                    continue
+
+                # Batasi panjang agar tetap "paragraf singkat".
+                if len(extract) > 700:
+                    cut = extract[:700]
+                    last_dot = cut.rfind(". ")
+                    extract = (cut[: last_dot + 1] if last_dot > 200 else cut).strip()
+                return {
+                    "description": extract,
+                    "source": f"Wikipedia {lang.upper()}",
+                    "source_url": intro["url"],
                 }
-
-                search_response = requests.get(
-                    search_url,
-                    params=search_params,
-                    headers=WIKI_HEADERS,
-                    timeout=10,
-                )
-                search_response.raise_for_status()
-
-                results = (
-                    search_response.json()
-                    .get("query", {})
-                    .get("search", [])
-                )
-                if not results:
-                    continue
-
-                # Pilih kandidat pertama yang judulnya benar-benar cocok.
-                matched_title = None
-                for item in results:
-                    title = item.get("title", "")
-                    if _title_matches_place(place_name, title):
-                        matched_title = title
-                        break
-
-                if not matched_title:
-                    # Tidak ada yang cocok di bahasa ini, coba bahasa berikutnya.
-                    continue
-
-                summary_url = (
-                    f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/"
-                    f"{quote(matched_title)}"
-                )
-                summary_response = requests.get(
-                    summary_url,
-                    headers=WIKI_HEADERS,
-                    timeout=10,
-                )
-                summary_response.raise_for_status()
-
-                summary_data = summary_response.json()
-
-                # Tolak halaman disambiguasi.
-                if summary_data.get("type") == "disambiguation":
-                    continue
-
-                description = summary_data.get("extract")
-                page_url = (
-                    summary_data.get("content_urls", {})
-                    .get("desktop", {})
-                    .get("page")
-                )
-
-                if description:
-                    return {
-                        "description": description,
-                        "source": f"Wikipedia {lang.upper()}",
-                        "source_url": page_url,
-                    }
-
-            except Exception:
-                continue
 
     return {
         "description": (
-            f"{place_name} merupakan salah satu destinasi wisata yang dapat "
-            "menjadi pilihan kunjungan berdasarkan minat pengguna."
+            f"{place_name} adalah salah satu destinasi wisata di Bali yang bisa "
+            "menjadi pilihan kunjungan sesuai minat dan preferensi perjalananmu. "
+            "Informasi rinci untuk tempat ini belum tersedia di Wikipedia, namun "
+            "destinasi ini direkomendasikan berdasarkan kecocokan dengan kriteria "
+            "yang kamu pilih."
         ),
         "source": "Fallback",
         "source_url": None,
