@@ -42,8 +42,7 @@ def get_app_config(key: str, default: str) -> str:
 
 # CONFIGURATION BACKEND URL
 BACKEND_URL = get_app_config(
-    "BACKEND_URL",
-    "https://balinavi-smart-travel.onrender.com",
+    "BACKEND_URL", "http://localhost:8000"
 )
 
 st.set_page_config(
