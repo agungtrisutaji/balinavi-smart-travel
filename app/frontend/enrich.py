@@ -79,8 +79,8 @@ def get_google_api_key() -> Optional[str]:
     Ambil Google Places API key dengan aman.
 
     Prioritas:
-      1. st.secrets["GOOGLE_API_KEY"]  (untuk deploy Streamlit / secrets.toml)
-      2. environment variable GOOGLE_API_KEY
+      1. st.secrets["GOOGLE_API_KEY"] dari .streamlit/secrets.toml
+      2. environment variable GOOGLE_API_KEY untuk container/deploy
 
     Mengembalikan None jika tidak ada, sehingga enrichment foto bisa
     di-skip tanpa membuat aplikasi error.

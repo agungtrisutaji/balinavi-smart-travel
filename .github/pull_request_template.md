@@ -7,7 +7,7 @@
 ## Validation
 - [ ] Tests passed locally
 - [ ] Docker Compose config validated
-- [ ] No secrets or .env files committed
+- [ ] No secrets, `.env`, or `.streamlit/secrets.toml` files committed
 
 ## Notes
 -

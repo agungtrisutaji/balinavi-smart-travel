@@ -49,20 +49,19 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 5. Siapkan File Environment
+### 5. Siapkan Streamlit Secrets
 
-Salin `.env.example` ke `.env`:
+Salin `.streamlit/secrets.toml.example` ke `.streamlit/secrets.toml`:
 
 ```bash
-cp .env.example .env
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 ```
 
-Isi file `.env` tidak perlu diubah untuk pengembangan lokal. Nilai default sudah tersedia:
+Isi file `.streamlit/secrets.toml` tidak perlu diubah untuk pengembangan lokal. Nilai default sudah tersedia:
 
-```text
-BACKEND_URL=http://localhost:8000
-BACKEND_HOST=0.0.0.0
-BACKEND_PORT=8000
+```toml
+BACKEND_URL = "http://localhost:8000"
+GOOGLE_API_KEY = ""
 ```
 
 ## Menjalankan Aplikasi Secara Lokal
@@ -172,13 +171,14 @@ docker/            Dockerfile
 - `allocation_service.py` untuk alokasi budget.
 - `recommender_service.py` untuk rekomendasi destinasi.
 
-## Variabel Environment
+## Konfigurasi Runtime
 
-| Variabel | Default | Kegunaan |
+| Konfigurasi | Default | Kegunaan |
 |---|---|---|
-| `BACKEND_URL` | `http://localhost:8000` | URL backend untuk frontend |
-| `BACKEND_HOST` | `0.0.0.0` | Host backend |
-| `BACKEND_PORT` | `8000` | Port backend |
+| `.streamlit/secrets.toml` `BACKEND_URL` | `http://localhost:8000` | URL backend untuk frontend |
+| `.streamlit/secrets.toml` `GOOGLE_API_KEY` | kosong | API key opsional untuk foto destinasi |
+| environment `BACKEND_HOST` | `0.0.0.0` | Host backend jika menjalankan backend dengan konfigurasi environment |
+| environment `BACKEND_PORT` | `8000` | Port backend jika menjalankan backend dengan konfigurasi environment |
 
 ## Troubleshooting
 
@@ -192,7 +192,7 @@ docker/            Dockerfile
 
 - Pastikan backend sudah berjalan di `http://localhost:8000`.
 - Jika menggunakan Docker, pastikan `docker compose up --build` sudah berhasil.
-- Periksa variabel `BACKEND_URL` di `.env`.
+- Periksa `BACKEND_URL` di `.streamlit/secrets.toml`.
 
 ### Test gagal
 

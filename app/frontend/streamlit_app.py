@@ -28,10 +28,22 @@ except ImportError:
 
 
 
+def get_app_config(key: str, default: str) -> str:
+    """Read Streamlit secrets first, then environment variables for Docker."""
+    try:
+        value = st.secrets[key]
+        if value:
+            return str(value).strip()
+    except Exception:
+        pass
+
+    return os.getenv(key, default)
+
+
 # CONFIGURATION BACKEND URL
-BACKEND_URL = os.getenv(
+BACKEND_URL = get_app_config(
     "BACKEND_URL",
-    "https://balinavi-smart-travel.onrender.com"
+    "https://balinavi-smart-travel.onrender.com",
 )
 
 st.set_page_config(

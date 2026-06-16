@@ -103,6 +103,35 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+## Streamlit Secrets Template
+
+The repository includes `.streamlit/secrets.toml.example` as the public
+configuration template for the Streamlit frontend. Copy it to
+`.streamlit/secrets.toml` for local development, then adjust values as needed.
+
+```bash
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+```
+
+Do not commit `.streamlit/secrets.toml`, API keys, tokens, or private
+credentials.
+
+## Model Artifacts
+
+The MVP uses local Scikit-learn and Joblib artifacts stored in `artifacts/`:
+
+- `artifacts/vectorizer.pkl`
+- `artifacts/tfidf_matrix.pkl`
+- `artifacts/destination_data.pkl`
+
+No external model download link is required for the current submission because
+the demo-ready artifacts are included in the project. To regenerate them from
+the prepared dataset, run:
+
+```bash
+python src/models/train_recommender.py
+```
+
 ## Run Backend Locally
 
 ```bash
@@ -208,7 +237,7 @@ feature/docker-ci
 
 ## Notes for Team
 
-- Do not commit `.env`.
+- Do not commit `.env` or `.streamlit/secrets.toml`.
 - Do not commit large raw datasets unless approved.
 - Do not commit large model artifacts unless required for demo.
 - Keep API contract stable.

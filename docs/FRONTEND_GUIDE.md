@@ -37,7 +37,7 @@ app/frontend/
 
 - Judul halaman: "BaliNavi".
 - Layout: wide.
-- URL backend diambil dari variabel environment `BACKEND_URL`, default `http://localhost:8000`.
+- URL backend diambil dari `.streamlit/secrets.toml` melalui key `BACKEND_URL`, dengan fallback ke environment variable `BACKEND_URL` untuk Docker/deploy.
 
 ### Fungsi Utama
 
@@ -115,6 +115,7 @@ Tiga kolom metrik:
 Pastikan backend sudah berjalan di `http://localhost:8000`:
 
 ```bash
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 streamlit run app/frontend/streamlit_app.py
 ```
 
@@ -135,11 +136,12 @@ Frontend secara otomatis terhubung ke backend melalui `http://backend:8000` saat
 docker compose up --build
 ```
 
-## Variabel Environment
+## Konfigurasi Frontend
 
-| Variabel | Default | Kegunaan |
+| Konfigurasi | Default | Kegunaan |
 |---|---|---|
-| `BACKEND_URL` | `http://localhost:8000` | URL backend API |
+| `.streamlit/secrets.toml` `BACKEND_URL` | `http://localhost:8000` | URL backend API |
+| `.streamlit/secrets.toml` `GOOGLE_API_KEY` | kosong | API key opsional untuk foto destinasi |
 
 Saat menggunakan Docker Compose, variabel ini di-set ke `http://backend:8000` melalui `docker-compose.yml`.
 
@@ -157,7 +159,7 @@ Frontend menggunakan Plotly Express untuk visualisasi alokasi budget:
 ### "Backend is not reachable"
 
 - Pastikan backend berjalan di URL yang benar.
-- Periksa variabel `BACKEND_URL`.
+- Periksa `BACKEND_URL` di `.streamlit/secrets.toml` atau environment container.
 - Jika menggunakan Docker Compose, pastikan `docker compose up --build` berhasil.
 
 ### Visualisasi tidak muncul

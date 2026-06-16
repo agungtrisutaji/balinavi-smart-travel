@@ -11,7 +11,13 @@ pytest-cache-files-*
 .coverage
 htmlcov
 .env
+.env.*
+.streamlit/secrets.toml
+.vscode
+.idea
+.agents
 AGENTS.md
+server.py
 data/raw/*
 data/processed/*
 data/final/*
