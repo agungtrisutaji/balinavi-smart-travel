@@ -70,7 +70,7 @@ pytest tests/ -v
 
 ### Yang Tidak Boleh Dilakukan
 
-- Jangan commit file `.env`.
+- Jangan commit file `.env` atau `.streamlit/secrets.toml`.
 - Jangan commit dataset besar tanpa persetujuan tim.
 - Jangan commit model artifact besar kecuali diperlukan untuk demo.
 - Jangan mengubah API contract tanpa memperbarui dokumen, test, dan frontend.

@@ -119,7 +119,7 @@ Template tersedia di `.github/pull_request_template.md`:
 ## Validation
 - [ ] Tests passed locally
 - [ ] Docker Compose config validated
-- [ ] No secrets or .env files committed
+- [ ] No secrets, `.env`, or `.streamlit/secrets.toml` files committed
 
 ## Notes
 -
@@ -129,7 +129,8 @@ Template tersedia di `.github/pull_request_template.md`:
 
 Jangan commit file berikut (sudah diatur di `.gitignore`):
 
-- `.env` (gunakan `.env.example` sebagai referensi).
+- `.env`.
+- `.streamlit/secrets.toml` (gunakan `.streamlit/secrets.toml.example` sebagai referensi).
 - Folder virtual environment (`.venv/`).
 - Dataset besar tanpa persetujuan tim.
 - Model artifact besar kecuali diperlukan untuk demo.

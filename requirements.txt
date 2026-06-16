@@ -7,7 +7,6 @@ scikit-learn
 matplotlib
 plotly
 requests
-python-dotenv
 joblib
 pytest
 httpx
