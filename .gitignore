@@ -1,16 +1,50 @@
+# Environment and secrets
 .env
-AGENTS.md
+.env.*
+.streamlit/secrets.toml
+
+# Local virtual environments
 .venv/
 venv/
+env/
+ENV/
+
+# Python cache and test output
 __pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
 pytest-cache-files-*/
 .mypy_cache/
 .ruff_cache/
 .coverage
+coverage.xml
 htmlcov/
-.streamlit/secrets.toml
+
+# Local editor, OS, and Codex/MCP workspace files
+.vscode/
+.idea/
+.agents/
+AGENTS.md
+server.py
+skills-lock.json
+.DS_Store
+Thumbs.db
+
+# Notebook checkpoints and logs
+.ipynb_checkpoints/
+*.log
+*.tmp
+
+# Local submission/archive outputs
+*.zip
+submission/
+dist/
+build/
+
+# Large data and artifact folders are ignored by default.
+# Specific demo-ready CSV/PKL files can be explicitly unignored inside
+# each folder's local .gitignore when approved for the MVP submission.
 data/raw/*
 data/processed/*
 data/final/*
@@ -19,5 +53,3 @@ artifacts/*
 !data/processed/.gitignore
 !data/final/.gitignore
 !artifacts/.gitignore
-
-skills-lock.json
