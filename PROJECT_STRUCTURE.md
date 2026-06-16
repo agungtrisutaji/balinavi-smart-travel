@@ -86,7 +86,8 @@ balinavi-smart-travel/
 │   └── workflows/
 │       └── ci-docker.yml
 │
-├── .env.example
+├── .streamlit/
+│   └── secrets.toml.example
 ├── .dockerignore
 ├── .gitignore
 ├── docker-compose.yml
@@ -224,12 +225,13 @@ Commit these:
 - requirements,
 - Dockerfile,
 - workflow files,
-- `.env.example`,
+- `.streamlit/secrets.toml.example`,
 - `.gitkeep` placeholder files.
 
 Do not commit these unless approved:
 
 - `.env`,
+- `.streamlit/secrets.toml`,
 - virtual environment folders,
 - large raw datasets,
 - large model artifacts,
